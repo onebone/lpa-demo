@@ -8,7 +8,7 @@ requirejs(['priority-queue'], (PriorityQueue) => {
 
 		for (let i = 0; i < 3; i++) {
 			for (let j = 0; j < 3; j++) {
-				graph.addNode(new Vector2(i, j));
+				graph.addNode(new Vector2(j, i));
 			}
 		}
 
