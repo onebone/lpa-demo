@@ -39,12 +39,7 @@ requirejs(['priority-queue'], (PriorityQueue) => {
 
 			this.renderGraph();
 
-			this.queue = new PriorityQueue({
-				comparator: (a, b) => {
-					if(a[0] !== b[0]) return b[0] - a[0];
-					return b[1] - a[1];
-				}
-			});
+			this.queue = new PriorityQueue([], LPA.compareKey);
 			this.start.rhs = 0;
 			this.queue.queue(this.start.getKey(this.goal.point));
 		}
@@ -107,6 +102,40 @@ requirejs(['priority-queue'], (PriorityQueue) => {
 		}
 
 		computeShortestPath() {
+			while(true) {
+				const top = this.queue.peek();
+				if(!(LPA.compareKey(this.goal.getKey(this.goal.point), top) < 0 || (this.goal.rhs !== this.goal.g))) {
+					break;
+				}
+
+				const node = this.queue.dequeue();
+
+			}
+		}
+
+		/**
+		 *
+		 * @param {Node} node
+		 */
+		updateNode(node) {
+			if(node !== this.start) {
+				node.rhs = Infinity;
+				Object.keys(node.edges).forEach(edge => {
+					/** @var {Edge} edge */
+					/** @var {Node} neighbor */
+					const neighbor = this.graph.nodes[edge.getNeighbor(node.id)];
+					node.rhs = Math.min(node.rhs, neighbor.g + edge.cost);
+				});
+
+				if(this.queue.find((_, e) => e[2] === node)) {
+					//this.queue.
+				}
+			}
+		}
+
+		static compareKey(a, b) {
+			if(a[0] !== b[0]) return b[0] - a[0];
+			return b[1] - a[1];
 		}
 
 		setFontSize(size) {
@@ -217,6 +246,14 @@ requirejs(['priority-queue'], (PriorityQueue) => {
 			this.cost = cost;
 			this.n1 = n1;
 			this.n2 = n2;
+		}
+
+		/**
+		 * @param {Number} current
+		 */
+		getNeighbor(current) {
+			if(this.n1 === current) return this.n2;
+			return this.n1;
 		}
 	}
 

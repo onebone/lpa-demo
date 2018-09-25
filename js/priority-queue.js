@@ -1,1 +1,344 @@
-!function(t){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=t();else if("function"==typeof define&&define.amd)define([],t);else{var e;e="undefined"!=typeof window?window:"undefined"!=typeof global?global:"undefined"!=typeof self?self:this,e.PriorityQueue=t()}}(function(){return function t(e,i,r){function o(n,s){if(!i[n]){if(!e[n]){var h="function"==typeof require&&require;if(!s&&h)return h(n,!0);if(a)return a(n,!0);var u=new Error("Cannot find module '"+n+"'");throw u.code="MODULE_NOT_FOUND",u}var p=i[n]={exports:{}};e[n][0].call(p.exports,function(t){var i=e[n][1][t];return o(i?i:t)},p,p.exports,t,e,i,r)}return i[n].exports}for(var a="function"==typeof require&&require,n=0;n<r.length;n++)o(r[n]);return o}({1:[function(t,e,i){var r,o,a,n,s,h=function(t,e){function i(){this.constructor=t}for(var r in e)u.call(e,r)&&(t[r]=e[r]);return i.prototype=e.prototype,t.prototype=new i,t.__super__=e.prototype,t},u={}.hasOwnProperty;r=t("./PriorityQueue/AbstractPriorityQueue"),o=t("./PriorityQueue/ArrayStrategy"),n=t("./PriorityQueue/BinaryHeapStrategy"),a=t("./PriorityQueue/BHeapStrategy"),s=function(t){function e(t){t||(t={}),t.strategy||(t.strategy=n),t.comparator||(t.comparator=function(t,e){return(t||0)-(e||0)}),e.__super__.constructor.call(this,t)}return h(e,t),e}(r),s.ArrayStrategy=o,s.BinaryHeapStrategy=n,s.BHeapStrategy=a,e.exports=s},{"./PriorityQueue/AbstractPriorityQueue":2,"./PriorityQueue/ArrayStrategy":3,"./PriorityQueue/BHeapStrategy":4,"./PriorityQueue/BinaryHeapStrategy":5}],2:[function(t,e,i){var r;e.exports=r=function(){function t(t){var e;if(null==(null!=t?t.strategy:void 0))throw"Must pass options.strategy, a strategy";if(null==(null!=t?t.comparator:void 0))throw"Must pass options.comparator, a comparator";this.priv=new t.strategy(t),this.length=(null!=t&&null!=(e=t.initialValues)?e.length:void 0)||0}return t.prototype.queue=function(t){this.length++,this.priv.queue(t)},t.prototype.dequeue=function(t){if(!this.length)throw"Empty queue";return this.length--,this.priv.dequeue()},t.prototype.peek=function(t){if(!this.length)throw"Empty queue";return this.priv.peek()},t.prototype.clear=function(){return this.length=0,this.priv.clear()},t}()},{}],3:[function(t,e,i){var r,o;o=function(t,e,i){var r,o,a;for(o=0,r=t.length;r>o;)a=o+r>>>1,i(t[a],e)>=0?o=a+1:r=a;return o},e.exports=r=function(){function t(t){var e;this.options=t,this.comparator=this.options.comparator,this.data=(null!=(e=this.options.initialValues)?e.slice(0):void 0)||[],this.data.sort(this.comparator).reverse()}return t.prototype.queue=function(t){var e;e=o(this.data,t,this.comparator),this.data.splice(e,0,t)},t.prototype.dequeue=function(){return this.data.pop()},t.prototype.peek=function(){return this.data[this.data.length-1]},t.prototype.clear=function(){this.data.length=0},t}()},{}],4:[function(t,e,i){var r;e.exports=r=function(){function t(t){var e,i,r,o,a,n,s,h,u;for(this.comparator=(null!=t?t.comparator:void 0)||function(t,e){return t-e},this.pageSize=(null!=t?t.pageSize:void 0)||512,this.length=0,h=0;1<<h<this.pageSize;)h+=1;if(1<<h!==this.pageSize)throw"pageSize must be a power of two";for(this._shift=h,this._emptyMemoryPageTemplate=e=[],i=r=0,n=this.pageSize;n>=0?n>r:r>n;i=n>=0?++r:--r)e.push(null);if(this._memory=[],this._mask=this.pageSize-1,t.initialValues)for(s=t.initialValues,o=0,a=s.length;a>o;o++)u=s[o],this.queue(u)}return t.prototype.queue=function(t){this.length+=1,this._write(this.length,t),this._bubbleUp(this.length,t)},t.prototype.dequeue=function(){var t,e;return t=this._read(1),e=this._read(this.length),this.length-=1,this.length>0&&(this._write(1,e),this._bubbleDown(1,e)),t},t.prototype.peek=function(){return this._read(1)},t.prototype.clear=function(){this.length=0,this._memory.length=0},t.prototype._write=function(t,e){var i;for(i=t>>this._shift;i>=this._memory.length;)this._memory.push(this._emptyMemoryPageTemplate.slice(0));return this._memory[i][t&this._mask]=e},t.prototype._read=function(t){return this._memory[t>>this._shift][t&this._mask]},t.prototype._bubbleUp=function(t,e){var i,r,o,a;for(i=this.comparator;t>1&&(r=t&this._mask,t<this.pageSize||r>3?o=t&~this._mask|r>>1:2>r?(o=t-this.pageSize>>this._shift,o+=o&~(this._mask>>1),o|=this.pageSize>>1):o=t-2,a=this._read(o),!(i(a,e)<0));)this._write(o,e),this._write(t,a),t=o},t.prototype._bubbleDown=function(t,e){var i,r,o,a,n;for(n=this.comparator;t<this.length;)if(t>this._mask&&!(t&this._mask-1)?i=r=t+2:t&this.pageSize>>1?(i=(t&~this._mask)>>1,i|=t&this._mask>>1,i=i+1<<this._shift,r=i+1):(i=t+(t&this._mask),r=i+1),i!==r&&r<=this.length)if(o=this._read(i),a=this._read(r),n(o,e)<0&&n(o,a)<=0)this._write(i,e),this._write(t,o),t=i;else{if(!(n(a,e)<0))break;this._write(r,e),this._write(t,a),t=r}else{if(!(i<=this.length))break;if(o=this._read(i),!(n(o,e)<0))break;this._write(i,e),this._write(t,o),t=i}},t}()},{}],5:[function(t,e,i){var r;e.exports=r=function(){function t(t){var e;this.comparator=(null!=t?t.comparator:void 0)||function(t,e){return t-e},this.length=0,this.data=(null!=(e=t.initialValues)?e.slice(0):void 0)||[],this._heapify()}return t.prototype._heapify=function(){var t,e,i;if(this.data.length>0)for(t=e=1,i=this.data.length;i>=1?i>e:e>i;t=i>=1?++e:--e)this._bubbleUp(t)},t.prototype.queue=function(t){this.data.push(t),this._bubbleUp(this.data.length-1)},t.prototype.dequeue=function(){var t,e;return e=this.data[0],t=this.data.pop(),this.data.length>0&&(this.data[0]=t,this._bubbleDown(0)),e},t.prototype.peek=function(){return this.data[0]},t.prototype.clear=function(){this.length=0,this.data.length=0},t.prototype._bubbleUp=function(t){for(var e,i;t>0&&(e=t-1>>>1,this.comparator(this.data[t],this.data[e])<0);)i=this.data[e],this.data[e]=this.data[t],this.data[t]=i,t=e},t.prototype._bubbleDown=function(t){var e,i,r,o,a;for(e=this.data.length-1;;){if(i=(t<<1)+1,o=i+1,r=t,e>=i&&this.comparator(this.data[i],this.data[r])<0&&(r=i),e>=o&&this.comparator(this.data[o],this.data[r])<0&&(r=o),r===t)break;a=this.data[r],this.data[r]=this.data[t],this.data[t]=a,t=r}},t}()},{}]},{},[1])(1)});
+'use strict';
+
+//     priority-q 3.0.1
+//     https://github.com/raymond-lam/priority-q
+//     (c) 2018 Raymond Lam
+//
+//     Author: Raymond Lam (ray@lam-ray.com)
+//
+//     priority-queue.js may be freely distributed under the MIT license
+
+// Default cmp function, which simply returns 1, -1, or 0 if a > b, a < b, or
+// otherwise respectively.
+function defaultCmp(a, b) {
+  if (a > b) return 1;
+  else if (a < b) return -1;
+  else return 0;
+}
+
+module.exports = class {
+  // Constructor takes initial elements of the priority queue (which defaults to
+  // an empty array) and a comparator (which defaults to defaultCmp). It
+  // constructs a priority queue, where the given comparator will always be used
+  // for comparisons, and enqueues the given initial elements.
+  constructor(init = [], cmp = defaultCmp) {
+    this._cmp = cmp;
+
+    // This priority queue is implemented as a binary min-heap represented by as
+    // an array.
+    this._heap = [];
+
+    // enqueue in a loop rather than using the spread operator, to accomodate
+    // very large init array (see issue #10)
+    for (const element of init) this.enqueue(element);
+  }
+
+  // Define an iterator which successively dequeues from a clone of this
+  // priority queue.
+  [Symbol.iterator]() {
+    return this.values();
+  }
+
+  // Removes all elements from the priority queue. Returns the number of
+  // elements removed.
+  clear() {
+    const length = this.length;
+    this._heap = [];
+    return length;
+  }
+
+  // Shallow clone of the priority queue.
+  clone() {
+
+    // Should be O(n) time complexity, because elements enqueued directly from a
+    // a heap will already be in the correct order and not need to be bubbled
+    // up.
+
+    if (this.constructor[Symbol.species])
+      return new this.constructor[Symbol.species](this._heap, this._cmp);
+    else
+      return new this.constructor(this._heap, this._cmp);
+  }
+
+  // Returns an Array of the priority queue's elements in sorted order
+  // concatenated with the given arguments.
+  concat(...arrays) {
+    return Array.from(this).concat(...arrays);
+  }
+
+  // Removes the minimum element of the priority queue, Returns undefined if the
+  // priority queue is empty.
+  dequeue() {
+    // If there is only one element in the priority queue, just remove and
+    // return it. If there are zero, return undefined.
+    if (this._heap.length < 2) return this._heap.pop();
+
+    // Save the return value, and put the last leaf of the heap at the root.
+    const returnValue = this._heap[0];
+    this._heap[0] = this._heap.pop();
+
+    // The binary heap is represented as an array, where given an element at
+    // index i, the first child is (i * 2) + 1, and the second child is at
+    // (i * 2) + 2.
+    //
+    // Percolate down:
+    // Initialize i, childI1 and childI2 at the root and its children
+    // respectively. let nextI be the index of the minimum element of the
+    // current element and its children. Stop if we've reached the end of the
+    // heap or if the minimum element is the current element at i. Otherwise,
+    // swap the current element at i with the element at nextI, and continue the
+    // loop. For the next iteration of the loop, i becomes nextI (the index
+    // whose element we'd swapped), and childI1 and childI2 are the indices of
+    // the children.
+    for (
+      let i = 0, childI1 = 1, childI2 = 2, nextI;
+      childI1 < this._heap.length && (
+        nextI = this._minInHeap(
+          i,
+          childI1,
+          childI2 < this._heap.length ? childI2 : undefined
+        )
+      ) !== i;
+      i = nextI, childI1 = (i * 2) + 1, childI2 = childI1 + 1
+    ) this._swapInHeap(i, nextI);
+
+    return returnValue;
+  }
+
+  // Inserts each of the given arguments into the appropriate place in the
+  // priority queue. Returns the resulting length of the priority queue.
+  enqueue(...newValues) {
+    for (const newValue of newValues) {
+      // The enqueued element becomes the last leaf of the heap, which will be
+      // bubbled up as necessary.
+      this._heap.push(newValue);
+
+      // The binary heap is represented as an array, where given an element at
+      // index i, its parent is at floor((i - 1) / 2).
+      //
+      // Bubble up:
+      // Start the loop at the last leaf of the heap. Stop the loop if the
+      // current element is the root of the heap or if the current element
+      // greater than or equal to the parent. Otherwise, swap the current
+      // element with its parent, and continue the loop at the parent.
+
+      for (
+        let i = this._heap.length - 1, parentI = Math.floor((i - 1) / 2);
+        i > 0 && this._cmpInHeap(i, parentI) < 0;
+        i = parentI, parentI = Math.floor((parentI - 1) / 2)
+      ) this._swapInHeap(i, parentI);
+    }
+
+    return this.length;
+  }
+
+  // Returns an Iterator which iterates over key/value pairs, where the values
+  // are the values in the priority queue, and the keys are the positions those
+  // values occupy in the priority queue.
+  *entries() {
+    let i = 0;
+    for (const value of this) {
+      yield [i++, value];
+    }
+  }
+
+  // Tests whether all elements in the priority queue pass the test implemented
+  // by the provided function.
+  every(callback, thisArg) {
+    for (const [i, element] of this.entries())
+      if (!callback.call(thisArg, element, i, this)) return false;
+    return true;
+  }
+
+  // Returns the value of the first element in the priority queue that satisfies
+  // the provided testing function, or undefined otherwise.
+  find(callback, thisArg) {
+    for (const [i, element] of this.entries())
+      if (callback.call(thisArg, element, i, this)) return element;
+    return undefined;
+  }
+
+  // Returns the index of the first element in the priority queue that satisfies
+  // the provided testing function, or undefined otherwise.
+  findIndex(callback, thisArg) {
+    for (const [i, element] of this.entries())
+      if (callback.call(thisArg, element, i, this)) return i;
+    return -1;
+  }
+
+  // Calls the given function on each element of the priority queue in order,
+  // optionally in the context of the given thisArg.
+  forEach(callback, thisArg) {
+    for (const [i, element] of this.entries())
+      callback.call(thisArg, element, i, this);
+  }
+
+  // Returns true if searchElement is present in the priority queue, starting
+  // search at fromIndex
+  includes(searchElement, fromIndex = 0) {
+    // If fromIndex is 0, it means search the whole queue, in which case order
+    // doesn't matter, so we can just delegate to the heap
+    if (fromIndex === 0) return this._heap.includes(searchElement);
+
+    // Negative fromIndex means start that many from the end of the priority
+    // queue
+    if (fromIndex < 0) fromIndex = this.length + fromIndex;
+
+    // Return true if there is an element in the priority queue that is at
+    // for after fromIndex that matches the searchElement.
+    if (Number.isNaN(searchElement))
+      return this.some((el, i) => i >= fromIndex && Number.isNaN(el));
+    else
+      return this.some((el, i) => i >= fromIndex && el === searchElement);
+  }
+
+  // Returns the first index at which a given element can be found in the array,
+  // or -1 if it is not present
+  indexOf(searchElement, fromIndex = 0) {
+    if (fromIndex < 0) fromIndex = this.length + fromIndex;
+
+    // This test fails for NaN, but that's okay, because it matches the
+    // behavior of Array.prototype.indexOf
+    return this.findIndex((el, i) => i >= fromIndex && el === searchElement);
+  }
+
+  // Creates a new priority queue with all elements that pass the test
+  // implemented by the provided function.
+  filter(callback, thisArg) {
+    const pq = this.constructor[Symbol.species]
+      ? new this.constructor[Symbol.species]([], this._cmp)
+      : new this.constructor([], this._cmp);
+    for (const [i, element] of this.entries())
+      if (callback.call(thisArg, element, i, this))
+        pq.enqueue(element);
+
+    return pq;
+  }
+
+  // Joins the elements of the priority queue in sorted order into a string.
+  join(...args) {
+    return Array.from(this).join(...args);
+  }
+
+  // Returns the last index at which a given element can be found in the array,
+  // or -1 if it is not present
+  lastIndexOf(...args) {
+    return Array.from(this).lastIndexOf(...args);
+  }
+
+  // Returns a new array with the results of calling a provided function on
+  // every element in this priority queue in order.
+  map(callback, thisArg) {
+    const arr = [];
+    for (const [i, element] of this.entries())
+      arr.push(callback.call(thisArg, element, i, this));
+    return arr;
+  }
+
+  // Returns an element of the priority queue without removing it.
+  peek(searchIndex = 0) {
+    if (searchIndex === 0) return this._heap[0];
+    else {
+      if (searchIndex < 0) searchIndex = this.length + searchIndex;
+      return this.find((el, i) => i === searchIndex);
+    }
+  }
+
+  // Applies a function against an accumulator and each value of the priority
+  // queue in order to reduce it to a single value.
+  reduce(callback, initialValue) {
+    for (const [i, element] of this.entries())
+      initialValue = callback(initialValue, element, i, this);
+    return initialValue;
+  }
+
+  // Applies a function against an accumulator and each value of the priority
+  // queue in reverse order to reduce it to a single value.
+  reduceRight(callback, initialValue) {
+    for (const [i, element] of Array.from(this.entries()).reverse())
+      initialValue = callback(initialValue, element, i, this);
+    return initialValue;
+  }
+
+  // Returns a shallow copy of a portion of an priority queue into a new
+  // priority queue selected from begin to end (end not included). The original
+  // array is not modified.
+  slice(begin = 0, end = this.length) {
+
+    if (begin < 0) begin = this.length + begin;
+    if (end < 0) end = this.length + end;
+
+    return this.filter((el, i) => i >= begin && i < end);
+  }
+
+  // Tests whether some element in the priority queue passes the test
+  // implemented by the provided function.
+  some(callback, thisArg) {
+    for (const [i, element] of this.entries())
+      if (callback.call(thisArg, element, i, this)) return true;
+    return false;
+  }
+
+  // JSON.stringify of this priority queue should be the JSON of the elements
+  // of the priority queue in a sorted array.
+  toJSON() {
+    return Array.from(this);
+  }
+
+  // The locale-specific string form of this priority queue should be the
+  // locale-specific string form of an array of this priority queue's elements
+  // in sorted order.
+  toLocaleString() {
+    return Array.from(this).toLocaleString();
+  }
+
+  // The string form of this priority queue should be the string form of an
+  // array of this priority queue's elements in sorted order.
+  toString() {
+    return Array.from(this).toString();
+  }
+
+  // Returns a new Iterator which iterates over the priority queue's values,
+  // without mutating the priority queue itself.
+  *values() {
+    // Clone this because we don't want to mutate the original priority queue by
+    // iterating over its elements.
+    const priorityQueue = this.clone();
+
+    while (priorityQueue.length) {
+      yield priorityQueue.dequeue();
+    }
+  }
+
+  // length accessor is simply the number of elements currently in the priority
+  // queue.
+  get length() {
+    return this._heap.length;
+  }
+
+  // Helper method. Returns the result of the comparator function on the
+  // elements located at the given indices in the heap array.
+  _cmpInHeap(i1, i2) {
+    return this._cmp(this._heap[i1], this._heap[i2]);
+  }
+
+  // Helper method. Given two or three indices of the heap array, compares the
+  // corresponding elements and returns the index to the minimum element of
+  // them.
+  _minInHeap(i1, i2, i3) {
+
+    // First compare the elements at the first two given indices. Return the
+    // index for minimum of them, or if we are given a third index, compare with
+    // that corresponding element and return the minimum of them.
+    const i = this._cmpInHeap(i1, i2) > 0 ? i2 : i1;
+    if (typeof i3 === 'undefined') return i;
+    else return this._cmpInHeap(i, i3) > 0 ? i3 : i;
+  }
+
+  // Helper method. Swaps the elements at the given indices of the heap array.
+  _swapInHeap(i1, i2) {
+    const tmp = this._heap[i1];
+    this._heap[i1] = this._heap[i2];
+    this._heap[i2] = tmp;
+  }
+};
